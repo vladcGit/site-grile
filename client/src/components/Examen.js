@@ -2,60 +2,79 @@ import React from 'react';
 import axios from 'axios';
 import { Box, Button, Checkbox, Grid, Typography } from '@mui/material';
 import Appbar from './Appbar';
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import CountdownTimer from './CountdownTimer';
 
 export default function Examen() {
   const { id } = useParams();
   const [examen, setExamen] = React.useState(null);
-  const [canTake, setCanTake] = React.useState(false);
+  const [isStarted, setIsStarted] = React.useState(false);
   const [finished, setFinished] = React.useState(false);
   const [indexIntrebare, setindexIntrebare] = React.useState(0);
   const [intrebare, setintrebare] = React.useState({});
   const [indexRaspuns, setIndexRaspuns] = React.useState({});
   const [punctaj, setPunctaj] = React.useState(-1);
-  //   const [raspunsuri,setRaspunsuri] = React.useState([]);
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+  const [canTake, setCanTake] = React.useState(true);
+  const [redirect, setRedirect] = React.useState('');
 
   const SERVER = process.env.REACT_APP_SERVER_NAME;
+
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${SERVER}/api/examen/${id}`);
+        const resExamen = await axios.get(`${SERVER}/api/examen/${id}`);
 
         //sortare variante raspuns dupa createdAt
-        for (let intrebare of res.data.Intrebares) {
+        for (let intrebare of resExamen.data.Intrebares) {
           intrebare.Varianta.sort(
             (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
           );
         }
 
-        setExamen(res.data);
+        setExamen(resExamen.data);
+
+        //verifica daca examenul a fost platit
+        const resPlatit = await axios.get(
+          `${SERVER}/api/examen/${id}/e_platit`,
+          {
+            headers: { Authorization: localStorage.getItem('token') },
+          }
+        );
+        console.log(resPlatit.data);
+        if (!resPlatit.data.e_platit && !resExamen.data.e_gratis) {
+          setCanTake(false);
+          return;
+        }
+
         //verifica daca examenul a fost sustinut
 
-        const res2 = await axios.get(`${SERVER}/api/examen/${id}/rezultat`, {
-          headers: { Authorization: localStorage.getItem('token') },
-        });
-        if (res2.data.sustinut === true) {
+        const resTerminat = await axios.get(
+          `${SERVER}/api/examen/${id}/rezultat`,
+          {
+            headers: { Authorization: localStorage.getItem('token') },
+          }
+        );
+        if (resTerminat.data.sustinut === true) {
           setFinished(true);
-          setPunctaj(res2.data.punctaj);
+          setPunctaj(resTerminat.data.punctaj);
           return;
         }
 
         // verifica daca examenul a inceput
-        const diffTime = new Date() - new Date(res.data.data_incepere);
+        const diffTime = new Date() - new Date(resExamen.data.data_incepere);
         if (diffTime > 0) {
-          setCanTake(true);
+          setIsStarted(true);
 
           //verifica daca la unele intrebari a fost primit raspuns
           const obiect = JSON.parse(localStorage.getItem('examen'));
-          if (obiect == null || obiect.id_examen !== res.data.id) {
+          if (obiect == null || obiect.id_examen !== resExamen.data.id) {
             //obiect initial
             localStorage.setItem(
               'examen',
               JSON.stringify({
-                id_examen: res.data.id,
+                id_examen: resExamen.data.id,
                 raspunsuri: [],
               })
             );
@@ -63,8 +82,8 @@ export default function Examen() {
             //modificare index intrebare curenta in functie de obiectul din localStorage
             const index = obiect.raspunsuri.length;
             setindexIntrebare(index);
-            setintrebare(res.data.Intrebares[index]);
-            if (index === res.data.Intrebares.length) setFinished(true);
+            setintrebare(resExamen.data.Intrebares[index]);
+            if (index === resExamen.data.Intrebares.length) setFinished(true);
           }
         }
       } catch (e) {
@@ -76,8 +95,16 @@ export default function Examen() {
         }
       }
     };
-    fetchData();
+    if (localStorage.getItem('token')) fetchData();
   }, [SERVER, id]);
+
+  React.useEffect(() => {
+    if (!localStorage.getItem('token')) setRedirect('/login');
+  }, []);
+
+  React.useEffect(() => {
+    if (!canTake) setRedirect('/paywall');
+  }, [canTake]);
 
   React.useEffect(() => {
     setintrebare(examen?.Intrebares[indexIntrebare]);
@@ -171,6 +198,7 @@ export default function Examen() {
         color: 'text.primary',
       }}
     >
+      {redirect.length > 0 && <Navigate to={redirect} />}
       <Appbar />
       <Grid
         container
@@ -179,7 +207,7 @@ export default function Examen() {
         justifyContent={'center'}
         spacing={5}
       >
-        {examen && canTake && !finished && <Component />}
+        {examen && canTake && isStarted && !finished && <Component />}
         {finished && (
           <Grid item xs={12}>
             <Typography variant='h3'>
@@ -189,7 +217,13 @@ export default function Examen() {
             </Typography>
           </Grid>
         )}
-        {examen && !canTake && !finished && <div>Nu</div>}
+        {examen && canTake && !isStarted && !finished && (
+          <Grid item xs={12}>
+            <Typography variant='h3' mt='20px'>
+              Nu a inceput
+            </Typography>
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

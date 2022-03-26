@@ -20,7 +20,7 @@ app.use('/api/examen', require('./routes/exameneRoutes'));
 const [adminJs, router] = require('./admin/adminPage');
 app.use(adminJs.options.rootPath, router);
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3001;
 app.listen(port, async () => {
   // await sequelize.query('PRAGMA foreign_keys = off');
   await sequelize.authenticate();

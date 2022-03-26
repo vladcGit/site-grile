@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { ColorModeContext } from '../util';
 import { useMediaQuery } from '@mui/material';
@@ -8,32 +8,33 @@ import SignInSide from './SignIn';
 import Album from './Album';
 import Examene from './Examene';
 import Examen from './Examen';
+import Paywall from './Paywall';
 
 export default function App() {
   const [mode, setMode] = useState('light');
-  const [modifiedTheme, setModifiedTheme] = useState(false);
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  React.useEffect(() => {
+    if (prefersDarkMode) setMode('dark');
+  }, [prefersDarkMode]);
 
   const colorMode = useMemo(
     () => ({
       toggleColorMode: () => {
-        setModifiedTheme(true);
         setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-        const actualMode = mode === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', actualMode);
       },
     }),
-    [mode]
+    []
   );
 
   const theme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: modifiedTheme ? mode : prefersDarkMode ? 'dark' : 'light',
+          mode,
         },
       }),
-    [mode, prefersDarkMode, modifiedTheme]
+    [mode]
   );
 
   theme.typography.h3 = {
@@ -56,6 +57,7 @@ export default function App() {
             <Route exact path='/login' element={<SignInSide />} />
             <Route exact path='/examene' element={<Examene />} />
             <Route exact path='/examen/:id' element={<Examen />} />
+            <Route exact path='/paywall' element={<Paywall />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

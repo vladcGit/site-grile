@@ -76,4 +76,18 @@ app.post('/:id/termina', authenticationMiddleware, async (req, res) => {
   }
 });
 
+app.get('/:id/e_platit', authenticationMiddleware, async (req, res) => {
+  try {
+    const instanta = await ExamenStudent.findOne({
+      where: { id_student: req.userId, id_examen: req.params.id },
+    });
+    if (instanta != null && instanta.getDataValue('e_platit')) {
+      return res.status(200).json({ e_platit: true });
+    }
+    return res.status(200).json({ e_platit: false });
+  } catch (e) {
+    res.status(500).json(e);
+  }
+});
+
 module.exports = app;

@@ -19,6 +19,7 @@
     "express": "^4.17.3",
     "express-formidable": "^1.2.0",
     "jsonwebtoken": "^8.5.1",
+    "pg": "^8.7.3",
     "sequelize": "^6.17.0",
     "sqlite3": "^5.0.2"
   },
