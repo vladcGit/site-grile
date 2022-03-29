@@ -26,6 +26,13 @@ const branding = {
   //   logo: '/logo.png',
 };
 
+const pages = {
+  Operatii: {
+    label: 'Operatii',
+    component: AdminJS.bundle('./ComponentRapoarte'),
+  },
+};
+
 // initializare pagina admin cu modelele din sequelize
 const adminJs = new AdminJS({
   databases: [sequelize],
@@ -33,6 +40,7 @@ const adminJs = new AdminJS({
   rootPath: '/admin',
   locale,
   branding,
+  pages,
 });
 
 // initializare router cu logica de autentificare

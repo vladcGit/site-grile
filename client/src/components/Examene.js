@@ -10,13 +10,14 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Appbar from './Appbar';
 import axios from 'axios';
-import TimpPanaLa from './TimpPanaLa';
 import { useNavigate } from 'react-router-dom';
 import { formatDate } from '../util';
 
 export default function Examene() {
   const SERVER = process.env.REACT_APP_SERVER_NAME;
   const [examene, setExamene] = React.useState([]);
+  const [showExpired, setShowExpired] = React.useState(false);
+
   const navigate = useNavigate();
   React.useEffect(() => {
     const fetchData = async () => {
@@ -65,6 +66,24 @@ export default function Examene() {
               contents, the creator, etc. Make it short and sweet, but not too
               short so folks don&apos;t simply skip over it entirely.
             </Typography>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                width: '100%',
+                marginTop: '30px',
+              }}
+            >
+              <Button
+                variant='contained'
+                color='secondary'
+                onClick={() => {
+                  setShowExpired(!showExpired);
+                }}
+              >
+                Arata examenele mai vechi
+              </Button>
+            </div>
           </Container>
         </Box>
         <Container sx={{ py: 8 }} maxWidth='md'>
@@ -72,7 +91,23 @@ export default function Examene() {
           <Grid container spacing={4}>
             {examene.map((examen) => {
               return (
-                <Grid item key={examen.id} xs={12} sm={6} md={12}>
+                <Grid
+                  item
+                  key={examen.id}
+                  xs={12}
+                  sm={6}
+                  md={12}
+                  sx={{
+                    display:
+                      new Date(examen.data_incepere).getTime() +
+                        examen.durata * 60000 >
+                      new Date().getTime()
+                        ? 'block'
+                        : showExpired
+                        ? 'block'
+                        : 'none',
+                  }}
+                >
                   <Card
                     sx={{
                       height: '100%',

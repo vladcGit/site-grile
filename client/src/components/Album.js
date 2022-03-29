@@ -59,9 +59,11 @@ export default function Album() {
               <Button variant='contained' onClick={() => navigate('/examene')}>
                 Urmatoarele simulari
               </Button>
-              <Button variant='outlined' onClick={() => navigate('/signup')}>
-                Creeaza cont
-              </Button>
+              {!localStorage.getItem('token') && (
+                <Button variant='outlined' onClick={() => navigate('/signup')}>
+                  Creeaza cont
+                </Button>
+              )}
             </Stack>
           </Container>
         </Box>

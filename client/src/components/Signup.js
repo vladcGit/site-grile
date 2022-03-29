@@ -17,6 +17,10 @@ export default function SignUp() {
   const SERVER = process.env.REACT_APP_SERVER_NAME;
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    if (localStorage.getItem('token')) navigate(-1);
+  }, [navigate]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);

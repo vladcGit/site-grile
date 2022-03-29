@@ -5,8 +5,10 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import ThemeSwitch from './ThemeSwitch';
 import HomeIcon from '@mui/icons-material/Home';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ThemeSwitch from './ThemeSwitch';
 import { useNavigate } from 'react-router-dom';
 
 export default function Appbar() {
@@ -15,15 +17,15 @@ export default function Appbar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position='static'>
         <Toolbar>
-          {/* <IconButton
+          <IconButton
             size='large'
             edge='start'
             color='inherit'
-            aria-label='menu'
             sx={{ mr: 2 }}
+            onClick={() => navigate(-1)}
           >
-            <MenuIcon />
-          </IconButton> */}
+            <ArrowBackIcon />
+          </IconButton>
           <IconButton
             size='large'
             edge='start'
@@ -33,14 +35,38 @@ export default function Appbar() {
           >
             <HomeIcon />
           </IconButton>
-          <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
-            News
-          </Typography>
+          <IconButton
+            size='large'
+            edge='start'
+            color='inherit'
+            sx={{ mr: 2 }}
+            onClick={() => navigate(1)}
+          >
+            <ArrowForwardIcon />
+          </IconButton>
+          <Typography
+            variant='h6'
+            component='div'
+            sx={{ flexGrow: 1 }}
+          ></Typography>
 
           <ThemeSwitch />
-          <Button color='inherit' onClick={() => navigate('/login')}>
-            Login
-          </Button>
+          {!localStorage.getItem('token') && (
+            <Button color='inherit' onClick={() => navigate('/login')}>
+              Login
+            </Button>
+          )}
+          {localStorage.getItem('token') && (
+            <Button
+              color='inherit'
+              onClick={() => {
+                localStorage.removeItem('token');
+                navigate('/');
+              }}
+            >
+              Logout
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
     </Box>

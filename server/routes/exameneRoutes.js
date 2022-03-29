@@ -54,7 +54,8 @@ app.post('/:id/termina', authenticationMiddleware, async (req, res) => {
       const raspuns = req.body.raspunsuri.filter(
         (rasp) => rasp.id_intrebare === intrebare.id
       )[0].raspuns;
-      if (intrebare.getDataValue('raspuns_corect') === raspuns) numarCorecte++;
+      if (raspuns && intrebare.getDataValue('raspuns_corect') === raspuns)
+        numarCorecte++;
     }
     const instanta = await ExamenStudent.findOne({
       where: {
@@ -62,15 +63,17 @@ app.post('/:id/termina', authenticationMiddleware, async (req, res) => {
         id_examen: req.params.id,
       },
     });
+    const raspunsuri = req.body.raspunsuri.map((rasp) => rasp.raspuns).join('');
     if (instanta == null) {
       await ExamenStudent.create({
         id_student: req.userId,
         id_examen: req.params.id,
         punctaj: numarCorecte,
         e_platit: false,
+        raspunsuri,
       });
-    } else await instanta.update({ punctaj: numarCorecte });
-    return res.status(200).json({ punctaj: numarCorecte });
+    } else await instanta.update({ punctaj: numarCorecte, raspunsuri });
+    return res.status(200).json({ punctaj: numarCorecte, raspunsuri });
   } catch (e) {
     res.status(500).json(e);
   }
@@ -86,6 +89,70 @@ app.get('/:id/e_platit', authenticationMiddleware, async (req, res) => {
     }
     return res.status(200).json({ e_platit: false });
   } catch (e) {
+    res.status(500).json(e);
+  }
+});
+
+app.get('/:id/raspunsuri', authenticationMiddleware, async (req, res) => {
+  try {
+    const instanta = await ExamenStudent.findOne({
+      where: { id_student: req.userId, id_examen: req.params.id },
+    });
+
+    if (instanta == null || instanta.getDataValue('punctaj') < 0) {
+      return res.status(400).json('Examenul nu a fost sustinut');
+    }
+
+    const examen = await Examen.findByPk(req.params.id);
+    const intrebari = await examen.getIntrebares();
+
+    const listaId = intrebari.map((intreb) => intreb.id);
+    const raspCorecte = intrebari.map((intreb) => intreb.raspuns_corect);
+    const raspTrimise = instanta.getDataValue('raspunsuri');
+
+    // intorc id-ul intrebarii
+    const lista = [];
+    for (let i = 0; i < intrebari.length; i++) {
+      lista.push({
+        id: listaId[i],
+        trimis: raspTrimise[i],
+        corect: raspCorecte[i],
+      });
+    }
+
+    return res.status(200).json(lista);
+  } catch (e) {
+    console.log(e);
+    res.status(500).json(e);
+  }
+});
+
+app.get('/:id/clasament', authenticationMiddleware, async (req, res) => {
+  try {
+    let instante = await ExamenStudent.findAll({
+      where: { id_examen: req.params.id },
+      raw: true,
+      order: [['punctaj', 'DESC']],
+    });
+    const examen = await Examen.findByPk(req.params.id);
+
+    //data incepere
+    const data_inceput = new Date(examen.getDataValue('data_incepere'));
+
+    // durata in minute
+    const durata = examen.getDataValue('durata') * 60 * 1000;
+
+    if (data_inceput.getTime() + durata > new Date().getTime())
+      return res.status(400).json('Examenul nu s-a terminat inca');
+
+    instante = instante.map(
+      ({ id_examen, createdAt, updatedAt, raspunsuri, e_platit, ...rest }) =>
+        rest
+    );
+
+    return res.status(200).json(instante);
+  } catch (e) {
+    console.log(e);
     res.status(500).json(e);
   }
 });

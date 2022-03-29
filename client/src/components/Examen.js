@@ -4,11 +4,14 @@ import { Box, Button, Checkbox, Grid, Typography } from '@mui/material';
 import Appbar from './Appbar';
 import { Navigate, useParams } from 'react-router-dom';
 import CountdownTimer from './CountdownTimer';
+import SimpleText from './componenteExamen/SimpleText';
+import ExamenTerminat from './componenteExamen/ExamenTerminat';
 
 export default function Examen() {
   const { id } = useParams();
   const [examen, setExamen] = React.useState(null);
   const [isStarted, setIsStarted] = React.useState(false);
+  const [isOver, setIsOver] = React.useState(false);
   const [finished, setFinished] = React.useState(false);
   const [indexIntrebare, setindexIntrebare] = React.useState(0);
   const [intrebare, setintrebare] = React.useState({});
@@ -21,6 +24,7 @@ export default function Examen() {
 
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
+  //incarcare date initiale
   React.useEffect(() => {
     const fetchData = async () => {
       try {
@@ -42,14 +46,20 @@ export default function Examen() {
             headers: { Authorization: localStorage.getItem('token') },
           }
         );
-        console.log(resPlatit.data);
         if (!resPlatit.data.e_platit && !resExamen.data.e_gratis) {
           setCanTake(false);
           return;
         }
 
-        //verifica daca examenul a fost sustinut
+        //verifica daca examenul s-a terminat
+        const timpTerminare =
+          new Date(resExamen.data.data_incepere).getTime() +
+          resExamen.data.durata * 60 * 1000;
+        if (timpTerminare < new Date().getTime()) {
+          setIsOver(true);
+        }
 
+        //verifica daca examenul a fost sustinut
         const resTerminat = await axios.get(
           `${SERVER}/api/examen/${id}/rezultat`,
           {
@@ -98,18 +108,22 @@ export default function Examen() {
     if (localStorage.getItem('token')) fetchData();
   }, [SERVER, id]);
 
+  // redirect catre login daca nu esti autentificat
   React.useEffect(() => {
     if (!localStorage.getItem('token')) setRedirect('/login');
   }, []);
 
+  // redirect catre paywall daca nu ai platit
   React.useEffect(() => {
     if (!canTake) setRedirect('/paywall');
   }, [canTake]);
 
+  // schimbare text intrebare dupa ce e trimisa cea veche
   React.useEffect(() => {
     setintrebare(examen?.Intrebares[indexIntrebare]);
   }, [indexIntrebare, examen]);
 
+  // raspunde la intrebare si, daca e cazul, trimite test
   const handleSubmit = async () => {
     if (indexIntrebare == null) return alert('Selecteaza un raspuns');
     const obiect = JSON.parse(localStorage.getItem('examen'));
@@ -129,7 +143,6 @@ export default function Examen() {
         const raspunsuri = JSON.parse(
           localStorage.getItem('examen')
         ).raspunsuri;
-        console.log(raspunsuri);
         const res = await axios.post(
           `${SERVER}/api/examen/${id}/termina`,
           { raspunsuri },
@@ -207,22 +220,20 @@ export default function Examen() {
         justifyContent={'center'}
         spacing={5}
       >
-        {examen && canTake && isStarted && !finished && <Component />}
-        {finished && (
-          <Grid item xs={12}>
-            <Typography variant='h3'>
-              {punctaj > -1
-                ? `Ai obtinut ${punctaj} puncte din ${examen?.Intrebares.length}`
-                : 'Examen terminat, se calculeaza punctajul'}
-            </Typography>
-          </Grid>
+        {examen && canTake && isStarted && !isOver && !finished && (
+          <Component />
         )}
-        {examen && canTake && !isStarted && !finished && (
-          <Grid item xs={12}>
-            <Typography variant='h3' mt='20px'>
-              Nu a inceput
-            </Typography>
-          </Grid>
+        {!isOver && finished && isOver && finished && (
+          <SimpleText text='Ai terminat examenul, vei primi rezultatele dupa expirarea timpului' />
+        )}
+        {isOver && finished && (
+          <ExamenTerminat punctaj={punctaj} examen={examen} />
+        )}
+        {examen && canTake && !isStarted && !isOver && !finished && (
+          <SimpleText text='Nu a inceput' />
+        )}
+        {examen && canTake && isStarted && isOver && !finished && (
+          <SimpleText text='Examen terminat' />
         )}
       </Grid>
     </Box>

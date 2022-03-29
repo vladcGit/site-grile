@@ -9,6 +9,7 @@ import Album from './Album';
 import Examene from './Examene';
 import Examen from './Examen';
 import Paywall from './Paywall';
+import ClasamentExamen from './componenteExamen/ClasamentExamen';
 
 export default function App() {
   const [mode, setMode] = useState('light');
@@ -57,6 +58,11 @@ export default function App() {
             <Route exact path='/login' element={<SignInSide />} />
             <Route exact path='/examene' element={<Examene />} />
             <Route exact path='/examen/:id' element={<Examen />} />
+            <Route
+              exact
+              path='/examen/:id/clasament'
+              element={<ClasamentExamen />}
+            />
             <Route exact path='/paywall' element={<Paywall />} />
           </Routes>
         </BrowserRouter>

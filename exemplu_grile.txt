@@ -1,0 +1,20 @@
+exemplu fisier text
+descriere buna
+2022-03-26 10:31
+30
+Cat fac 2+6?
+b
+5
+6
+8
+1
+2
+3
+Care e a treia litera din alfabet?
+c
+5
+a
+b
+c
+d
+e

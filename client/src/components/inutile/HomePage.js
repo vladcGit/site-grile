@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { ColorModeContext } from '../util';
-import Appbar from './Appbar';
+import { ColorModeContext } from '../../util';
+import Appbar from '../Appbar';
 
 export default function HomePage() {
   const theme = useTheme();

@@ -1,0 +1,16 @@
+titlu
+descriere
+data incepere
+durata
+text_intrebare
+a
+5
+text_raspuns
+text_raspuns
+text_raspuns
+text_intrebare
+a
+5
+text_raspuns
+text_raspuns
+text_raspuns

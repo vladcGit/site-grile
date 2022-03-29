@@ -3,6 +3,7 @@ const app = express();
 const Student = require('../models/studenti');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { authenticationMiddleware } = require('../util');
 require('dotenv').config();
 
 // creare token cu datele din parametru
@@ -45,6 +46,20 @@ app.post('/login', async (req, res) => {
     } else {
       return res.status(403).json({ error: 'Parola e incorecta' });
     }
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json(e);
+  }
+});
+
+app.get('/', authenticationMiddleware, async (req, res) => {
+  try {
+    const instanta = await Student.findByPk(req.userId, { raw: true });
+    if (instanta == null)
+      return res.status(400).json({ error: 'Nu exista acest utilizator' });
+
+    delete instanta.parola;
+    return res.status(200).json(instanta);
   } catch (e) {
     console.log(e);
     return res.status(500).json(e);

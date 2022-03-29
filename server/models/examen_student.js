@@ -21,6 +21,10 @@ const ExamenStudent = sequelize.define(
         min: -1,
       },
     },
+    raspunsuri: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   { tableName: 'examen_student' }
 );
