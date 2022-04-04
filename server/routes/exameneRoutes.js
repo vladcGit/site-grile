@@ -53,7 +53,7 @@ app.post('/:id/termina', authenticationMiddleware, async (req, res) => {
     for (let intrebare of intrebari) {
       const raspuns = req.body.raspunsuri.filter(
         (rasp) => rasp.id_intrebare === intrebare.id
-      )[0].raspuns;
+      )[0]?.raspuns;
       if (raspuns && intrebare.getDataValue('raspuns_corect') === raspuns)
         numarCorecte++;
     }
@@ -63,7 +63,11 @@ app.post('/:id/termina', authenticationMiddleware, async (req, res) => {
         id_examen: req.params.id,
       },
     });
-    const raspunsuri = req.body.raspunsuri.map((rasp) => rasp.raspuns).join('');
+    let raspunsuri = req.body.raspunsuri.map((rasp) => rasp.raspuns).join('');
+    if (raspunsuri.length < intrebari.length) {
+      for (let i = raspunsuri.length; i < intrebari.length; i++)
+        raspunsuri += '-';
+    }
     if (instanta == null) {
       await ExamenStudent.create({
         id_student: req.userId,
@@ -76,6 +80,7 @@ app.post('/:id/termina', authenticationMiddleware, async (req, res) => {
     return res.status(200).json({ punctaj: numarCorecte, raspunsuri });
   } catch (e) {
     res.status(500).json(e);
+    console.log(e);
   }
 });
 

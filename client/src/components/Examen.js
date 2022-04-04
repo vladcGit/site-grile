@@ -24,6 +24,69 @@ export default function Examen() {
 
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
+  //submit final la examen
+  /*
+  const sendExam = async () => {
+    setFinished(true);
+    try {
+      const raspunsuri = JSON.parse(localStorage.getItem('examen')).raspunsuri;
+      const res = await axios.post(
+        `${SERVER}/api/examen/${id}/termina`,
+        { raspunsuri },
+        { headers: { Authorization: localStorage.getItem('token') } }
+      );
+      setPunctaj(res.data.punctaj);
+    } catch (e) {
+      const err = e.response;
+      if (err.status === 404) {
+        alert('Nu exista acest examen');
+      } else if (err.status === 500) {
+        alert('A aparut o eroare');
+      }
+    }
+  };
+*/
+
+  const callbackSendExam = React.useCallback(async () => {
+    setFinished(true);
+    if (punctaj > -1) return;
+    try {
+      const raspunsuri = JSON.parse(localStorage.getItem('examen')).raspunsuri;
+      const res = await axios.post(
+        `${SERVER}/api/examen/${id}/termina`,
+        { raspunsuri },
+        { headers: { Authorization: localStorage.getItem('token') } }
+      );
+      setPunctaj(res.data.punctaj);
+      localStorage.removeItem('examen');
+    } catch (e) {
+      const err = e.response;
+      if (err.status === 404) {
+        alert('Nu exista acest examen');
+        console.log(err);
+      } else if (err.status === 500) {
+        alert('A aparut o eroare');
+        console.log(err);
+      }
+    }
+  }, [SERVER, id, punctaj]);
+
+  //se asigura ca se da submit automat cand se termina timpul
+  React.useEffect(() => {
+    let timer;
+    if (isStarted && examen && canTake) {
+      timer = setInterval(() => {
+        const timpTerminare =
+          new Date(examen.data_incepere).getTime() + examen.durata * 60 * 1000;
+        if (timpTerminare < new Date().getTime()) {
+          setIsOver(true);
+          callbackSendExam();
+        }
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [examen, isStarted, canTake, callbackSendExam]);
+
   //incarcare date initiale
   React.useEffect(() => {
     const fetchData = async () => {
@@ -68,12 +131,14 @@ export default function Examen() {
         );
         if (resTerminat.data.sustinut === true) {
           setFinished(true);
+          setIsStarted(true);
           setPunctaj(resTerminat.data.punctaj);
           return;
         }
 
         // verifica daca examenul a inceput
         const diffTime = new Date() - new Date(resExamen.data.data_incepere);
+
         if (diffTime > 0) {
           setIsStarted(true);
 
@@ -137,27 +202,8 @@ export default function Examen() {
       localStorage.setItem('examen', JSON.stringify(obiect));
     }
 
-    if (obiect.raspunsuri.length === examen.Intrebares.length) {
-      setFinished(true);
-      try {
-        const raspunsuri = JSON.parse(
-          localStorage.getItem('examen')
-        ).raspunsuri;
-        const res = await axios.post(
-          `${SERVER}/api/examen/${id}/termina`,
-          { raspunsuri },
-          { headers: { Authorization: localStorage.getItem('token') } }
-        );
-        setPunctaj(res.data.punctaj);
-      } catch (e) {
-        const err = e.response;
-        if (err.status === 404) {
-          alert('Nu exista acest examen');
-        } else if (err.status === 500) {
-          alert('A aparut o eroare');
-        }
-      }
-    }
+    if (obiect.raspunsuri.length === examen.Intrebares.length)
+      await callbackSendExam();
   };
 
   const Component = () => (
@@ -223,7 +269,7 @@ export default function Examen() {
         {examen && canTake && isStarted && !isOver && !finished && (
           <Component />
         )}
-        {!isOver && finished && isOver && finished && (
+        {!isOver && finished && isStarted && examen && canTake && (
           <SimpleText text='Ai terminat examenul, vei primi rezultatele dupa expirarea timpului' />
         )}
         {isOver && finished && (

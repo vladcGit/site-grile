@@ -1,3 +1,2 @@
 vezi examene vechi/noi
-te scoate din examen cand expira
-texte pagina examen
+texte

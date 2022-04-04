@@ -10,7 +10,7 @@ export default function BasicTable(props) {
   const { columns, rows, highlightColor, predicatHighlight } = props;
   const removeProperty = (object, property) => {
     const copie = { ...object };
-    delete object[property];
+    delete copie[property];
     return copie;
   };
 
@@ -42,12 +42,11 @@ export default function BasicTable(props) {
               <TableCell component='th' scope='row'>
                 {index + 1}
               </TableCell>
-              {console.log(Object.keys(removeProperty(row, 'id')))}
               {Object.keys(removeProperty(row, 'id')).map(
                 (keyName, indexCol) => (
                   <TableCell
-                    align='right'
                     key={`rand ${index} coloana ${indexCol}`}
+                    align='right'
                   >
                     {row[keyName]}
                   </TableCell>
