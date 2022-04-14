@@ -54,7 +54,7 @@ export default function Examene() {
               color='text.primary'
               gutterBottom
             >
-              Album layout
+              Toate examenele
             </Typography>
             <Typography
               variant='h5'
@@ -62,9 +62,8 @@ export default function Examene() {
               color='text.secondary'
               paragraph
             >
-              Something short and leading about the collection below—its
-              contents, the creator, etc. Make it short and sweet, but not too
-              short so folks don&apos;t simply skip over it entirely.
+              Aici poti vedea examenele viitoare si poti revedea examenele pe
+              care le-ai dat deja.
             </Typography>
             <div
               style={{
@@ -140,6 +139,16 @@ export default function Examene() {
                 </Grid>
               );
             })}
+            {examene.filter(
+              (examen) =>
+                new Date(examen.data_incepere).getTime() +
+                  examen.durata * 60000 >
+                new Date().getTime()
+            ).length === 0 && (
+              <Grid item textAlign={'center'} width='100%'>
+                Momentan nu exista examene viitoare
+              </Grid>
+            )}
           </Grid>
         </Container>
       </main>
