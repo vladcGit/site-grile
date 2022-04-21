@@ -12,6 +12,7 @@
 # production
 /build
 /client/build
+/server/build
 .entry.js
 /server/.adminjs
 
