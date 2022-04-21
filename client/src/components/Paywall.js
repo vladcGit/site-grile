@@ -21,9 +21,12 @@ export default function Paywall() {
         minHeight={'80vh'}
       >
         <Grid item xs={12} textAlign='center' padding={'20px'}>
-          <Typography variant='h3'>
-            Pentru a sustine acest examen trebuie sa platesti
+          <Typography variant='h3' mb='40px'>
+            Pentru a sustine acest examen trebuie sa platesti 80 de lei in
+            contul:
           </Typography>
+          <Typography variant='h3'>RO48CECEB00030RON2163195</Typography>
+          <Typography variant='h3'>Rtx Sutures srl</Typography>
         </Grid>
       </Grid>
     </Box>

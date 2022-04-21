@@ -22,7 +22,11 @@ export default function Appbar() {
             edge='start'
             color='inherit'
             sx={{ mr: 2 }}
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (window.location.href.split('/')[3] === 'paywall')
+                navigate(-2);
+              else navigate(-1);
+            }}
           >
             <ArrowBackIcon />
           </IconButton>
