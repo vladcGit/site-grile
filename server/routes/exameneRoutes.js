@@ -54,7 +54,7 @@ app.post('/:id/termina', authenticationMiddleware, async (req, res) => {
       const raspuns = req.body.raspunsuri.filter(
         (rasp) => rasp.id_intrebare === intrebare.id
       )[0]?.raspuns;
-      if (raspuns && intrebare.getDataValue('raspuns_corect') === raspuns)
+      if (raspuns && intrebare.getDataValue('raspuns_corect')[0] === raspuns)
         numarCorecte++;
     }
     const instanta = await ExamenStudent.findOne({
@@ -112,7 +112,7 @@ app.get('/:id/raspunsuri', authenticationMiddleware, async (req, res) => {
     const intrebari = await examen.getIntrebares();
 
     const listaId = intrebari.map((intreb) => intreb.id);
-    const raspCorecte = intrebari.map((intreb) => intreb.raspuns_corect);
+    const raspCorecte = intrebari.map((intreb) => intreb.raspuns_corect[0]);
     const raspTrimise = instanta.getDataValue('raspunsuri');
 
     // intorc id-ul intrebarii

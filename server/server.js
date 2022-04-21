@@ -19,13 +19,14 @@ require('./models/varianta');
 app.use('/api/user', require('./routes/userRoutes'));
 app.use('/api/examen', require('./routes/exameneRoutes'));
 
-const buildPath = path.join(__dirname, 'build');
-app.use(express.static(buildPath));
-app.get('/', (req, res) => res.sendFile(path.join(buildPath, 'index.html')));
-
 //admin
 const [adminJs, router] = require('./admin/adminPage');
 app.use(adminJs.options.rootPath, router);
+
+// ce vine din react
+const buildPath = path.join(__dirname, 'build');
+app.use(express.static(buildPath));
+app.get('*', (req, res) => res.sendFile(path.join(buildPath, 'index.html')));
 
 const port = process.env.PORT || 3001;
 app.listen(port, async () => {
